@@ -1,12 +1,17 @@
 import * as React from 'react';
 import {trackCustomEvent} from 'gatsby-plugin-google-analytics';
 import {Box} from '@twilio-paste/box';
+import {Stack} from '@twilio-paste/stack';
 import {Label} from '@twilio-paste/label';
+import {Heading} from '@twilio-paste/heading';
+import {Card} from '@twilio-paste/card';
+import {Button} from '@twilio-paste/button';
 import {Input} from '@twilio-paste/input';
 import {Table, Tr, Th, Td, THead, TBody} from '@twilio-paste/table';
 import {Text} from '@twilio-paste/text';
 import {useUID} from '@twilio-paste/uid-library';
 import type {ThemeVariants} from '@twilio-paste/theme';
+import {navigate, useLocation} from '@reach/router';
 import {InlineCode} from '../Typography';
 import {AnchoredHeading} from '../Heading';
 import {Callout, CalloutTitle, CalloutText} from '../callout';
@@ -98,19 +103,21 @@ const trackTokenFilterString = debounce((filter: string): void => {
 
 export const TokensList: React.FC<TokensListProps> = (props) => {
   const {theme} = useDarkModeContext();
+  const location = useLocation();
+  const initialFilterString = location.search.match(/=(.*)$/) ? location.search.match(/=(.*)$/)[1] : '';
+  const [filterString, setFilterString] = React.useState(initialFilterString);
   const [tokens, setTokens] = React.useState<TokenCategory[] | null>(getTokensByTheme(props, theme));
-  const [filterString, setFilterString] = React.useState('');
 
   React.useEffect(() => {
     setTokens(getTokensByTheme(props, theme));
   }, [theme]);
 
-  const filterTokenList = (): void => {
+  const filterTokenList = (filter: string): void => {
     setTokens(() => {
       const newTokenCategories = getTokensByTheme(props, theme).map(
         (category): TokenCategory => {
           const newTokens = category.tokens.filter((token) => {
-            return token.name.includes(filterString) || token.value.includes(filterString);
+            return token.name.includes(filter) || token.value.includes(filter);
           });
           return {...category, tokens: newTokens};
         }
@@ -128,15 +135,17 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
   const handleInput = (e: React.FormEvent<HTMLInputElement>): void => {
     const filter = e.currentTarget.value;
     setFilterString(filter);
-    filterTokenList();
+    filterTokenList(filter);
     trackTokenFilterString(filter);
+    if (filter === '') navigate(window.location.pathname, {replace: true});
+    else navigate(`?tokens-filter=${filter}`, {replace: true});
   };
 
   const uid = useUID();
 
   return (
     <>
-      <Box as="form" marginTop="space100" marginBottom="space100" maxWidth="size40">
+      <Box as="div" marginTop="space100" marginBottom="space100" maxWidth="size40">
         <Label htmlFor={uid}>Filter tokens</Label>
         <Input
           autoComplete="off"
@@ -148,7 +157,7 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
           name="tokens-filter"
         />
       </Box>
-      {tokens != null &&
+      {tokens != null ? (
         tokens.map((cat) => {
           return (
             <React.Fragment key={`catname${cat.categoryName}`}>
@@ -194,7 +203,35 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
               </Box>
             </React.Fragment>
           );
-        })}
+        })
+      ) : (
+        <Card>
+          <Stack orientation="horizontal" spacing="space70">
+            <Box
+              as="img"
+              src="/images/patterns/empty-no-results-found.png"
+              alt="No results found illustration"
+              size="size20"
+            />
+            <Stack orientation="vertical" spacing="space40">
+              <Heading as="h3" variant="heading30">
+                Oh no! We couldn&apos;t find any matches
+              </Heading>
+              <Text as="span">
+                Try clearing your search and using another query to find the token you&apos;re looking for.
+              </Text>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setFilterString('');
+                }}
+              >
+                Clear search
+              </Button>
+            </Stack>
+          </Stack>
+        </Card>
+      )}
     </>
   );
 };
