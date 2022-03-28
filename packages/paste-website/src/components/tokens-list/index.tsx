@@ -11,7 +11,7 @@ import {Table, Tr, Th, Td, THead, TBody} from '@twilio-paste/table';
 import {Text} from '@twilio-paste/text';
 import {useUID} from '@twilio-paste/uid-library';
 import type {ThemeVariants} from '@twilio-paste/theme';
-import {navigate, useLocation} from '@reach/router';
+import {navigate} from '@reach/router';
 import {InlineCode} from '../Typography';
 import {AnchoredHeading} from '../Heading';
 import {Callout, CalloutTitle, CalloutText} from '../callout';
@@ -103,8 +103,8 @@ const trackTokenFilterString = debounce((filter: string): void => {
 
 export const TokensList: React.FC<TokensListProps> = (props) => {
   const {theme} = useDarkModeContext();
-  const location = useLocation();
-  const initialFilterString = location.search.match(/=(.*)$/) ? location.search.match(/=(.*)$/)[1] : '';
+  const params = new URLSearchParams(document.location.search);
+  const initialFilterString = params.get('tokens-filter') ? params.get('tokens-filter') : '';
   const [filterString, setFilterString] = React.useState(initialFilterString);
   const [tokens, setTokens] = React.useState<TokenCategory[] | null>(getTokensByTheme(props, theme));
 
@@ -132,11 +132,14 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
     });
   };
 
+  React.useEffect(() => {
+    if (typeof filterString === 'string') filterTokenList(filterString);
+    trackTokenFilterString(filterString);
+  }, [filterString]);
+
   const handleInput = (e: React.FormEvent<HTMLInputElement>): void => {
     const filter = e.currentTarget.value;
     setFilterString(filter);
-    filterTokenList(filter);
-    trackTokenFilterString(filter);
     if (filter === '') navigate(window.location.pathname, {replace: true});
     else navigate(`?tokens-filter=${filter}`, {replace: true});
   };
@@ -153,7 +156,7 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
           onChange={handleInput}
           placeholder="filter by name or value"
           type="text"
-          value={filterString}
+          value={filterString || ''}
           name="tokens-filter"
         />
       </Box>
@@ -224,6 +227,7 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
                 variant="secondary"
                 onClick={() => {
                   setFilterString('');
+                  navigate(window.location.pathname, {replace: true});
                 }}
               >
                 Clear search
