@@ -104,7 +104,7 @@ const trackTokenFilterString = debounce((filter: string): void => {
 export const TokensList: React.FC<TokensListProps> = (props) => {
   const {theme} = useDarkModeContext();
   const params = new URLSearchParams(document.location.search);
-  const initialFilterString = params.get('tokens-filter') ? params.get('tokens-filter') : '';
+  const initialFilterString = params.get('tokens-filter') ?? '';
   const [filterString, setFilterString] = React.useState(initialFilterString);
   const [tokens, setTokens] = React.useState<TokenCategory[] | null>(getTokensByTheme(props, theme));
 
@@ -133,7 +133,7 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
   };
 
   React.useEffect(() => {
-    if (typeof filterString === 'string') filterTokenList(filterString);
+    filterTokenList(filterString);
     trackTokenFilterString(filterString);
   }, [filterString]);
 
@@ -148,7 +148,13 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
 
   return (
     <>
-      <Box as="div" marginTop="space100" marginBottom="space100" maxWidth="size40">
+      <Box
+        as="form"
+        marginTop="space100"
+        marginBottom="space100"
+        maxWidth="size40"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <Label htmlFor={uid}>Filter tokens</Label>
         <Input
           autoComplete="off"
@@ -156,7 +162,7 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
           onChange={handleInput}
           placeholder="filter by name or value"
           type="text"
-          value={filterString || ''}
+          value={filterString}
           name="tokens-filter"
         />
       </Box>
