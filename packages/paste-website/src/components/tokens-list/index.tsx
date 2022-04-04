@@ -18,6 +18,7 @@ import {Callout, CalloutTitle, CalloutText} from '../callout';
 import {TokenExample} from './TokensExample';
 import {getTokenValue} from './getTokenValue';
 import {useDarkModeContext} from '../../context/DarkModeContext';
+import {useLocationPathname, useLocationSearch} from '../../utils/RouteUtils';
 
 const debounce = require('lodash/debounce');
 
@@ -101,10 +102,36 @@ const trackTokenFilterString = debounce((filter: string): void => {
   }
 }, 500);
 
+const filterTokenList = (
+  filter: string,
+  callback: React.Dispatch<React.SetStateAction<TokenCategory[] | null>>,
+  propsArg: TokensListProps,
+  themeArg: string
+): void => {
+  callback(() => {
+    const newTokenCategories = getTokensByTheme(propsArg, themeArg).map(
+      (category): TokenCategory => {
+        const newTokens = category.tokens.filter((token) => {
+          return token.name.includes(filter) || token.value.includes(filter);
+        });
+        return {...category, tokens: newTokens};
+      }
+    );
+    const filteredCategories = newTokenCategories.filter((category) => {
+      return category.tokens.length > 0;
+    });
+    if (filteredCategories.length > 0) {
+      return filteredCategories;
+    }
+    return null;
+  });
+};
+
 export const TokensList: React.FC<TokensListProps> = (props) => {
+  const pathname = useLocationPathname();
+  const search = useLocationSearch();
   const {theme} = useDarkModeContext();
-  const params = new URLSearchParams(document.location.search);
-  const initialFilterString = params.get('tokens-filter') ?? '';
+  const initialFilterString = search ? search.replace('?tokens-filter=', '') : '';
   const [filterString, setFilterString] = React.useState(initialFilterString);
   const [tokens, setTokens] = React.useState<TokenCategory[] | null>(getTokensByTheme(props, theme));
 
@@ -112,35 +139,15 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
     setTokens(getTokensByTheme(props, theme));
   }, [theme]);
 
-  const filterTokenList = (filter: string): void => {
-    setTokens(() => {
-      const newTokenCategories = getTokensByTheme(props, theme).map(
-        (category): TokenCategory => {
-          const newTokens = category.tokens.filter((token) => {
-            return token.name.includes(filter) || token.value.includes(filter);
-          });
-          return {...category, tokens: newTokens};
-        }
-      );
-      const filteredCategories = newTokenCategories.filter((category) => {
-        return category.tokens.length > 0;
-      });
-      if (filteredCategories.length > 0) {
-        return filteredCategories;
-      }
-      return null;
-    });
-  };
-
   React.useEffect(() => {
-    filterTokenList(filterString);
+    filterTokenList(filterString, setTokens, props, theme);
     trackTokenFilterString(filterString);
   }, [filterString]);
 
   const handleInput = (e: React.FormEvent<HTMLInputElement>): void => {
     const filter = e.currentTarget.value;
     setFilterString(filter);
-    if (filter === '') navigate(window.location.pathname, {replace: true});
+    if (filter === '') navigate(pathname, {replace: true});
     else navigate(`?tokens-filter=${filter}`, {replace: true});
   };
 
@@ -233,7 +240,7 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
                 variant="secondary"
                 onClick={() => {
                   setFilterString('');
-                  navigate(window.location.pathname, {replace: true});
+                  navigate(pathname, {replace: true});
                 }}
               >
                 Clear search
