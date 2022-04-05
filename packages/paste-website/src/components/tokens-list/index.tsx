@@ -104,27 +104,28 @@ const trackTokenFilterString = debounce((filter: string): void => {
 
 const filterTokenList = (
   filter: string,
-  callback: React.Dispatch<React.SetStateAction<TokenCategory[] | null>>,
+  // callback: React.Dispatch<React.SetStateAction<TokenCategory[] | null>>,
   propsArg: TokensListProps,
   themeArg: string
-): void => {
-  callback(() => {
-    const newTokenCategories = getTokensByTheme(propsArg, themeArg).map(
-      (category): TokenCategory => {
-        const newTokens = category.tokens.filter((token) => {
-          return token.name.includes(filter) || token.value.includes(filter);
-        });
-        return {...category, tokens: newTokens};
-      }
-    );
-    const filteredCategories = newTokenCategories.filter((category) => {
-      return category.tokens.length > 0;
-    });
-    if (filteredCategories.length > 0) {
-      return filteredCategories;
+): TokenCategory[] | null => {
+  // callback(() => {
+  const newTokenCategories = getTokensByTheme(propsArg, themeArg).map(
+    (category): TokenCategory => {
+      const newTokens = category.tokens.filter((token) => {
+        return token.name.includes(filter) || token.value.includes(filter);
+      });
+      return {...category, tokens: newTokens};
     }
-    return null;
+  );
+  const filteredCategories = newTokenCategories.filter((category) => {
+    return category.tokens.length > 0;
   });
+  if (filteredCategories.length > 0) {
+    return filteredCategories;
+  }
+  return null;
+  // }
+  // );
 };
 
 export const TokensList: React.FC<TokensListProps> = (props) => {
@@ -135,14 +136,16 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
   const [filterString, setFilterString] = React.useState(initialFilterString);
   const [tokens, setTokens] = React.useState<TokenCategory[] | null>(getTokensByTheme(props, theme));
 
-  React.useEffect(() => {
-    setTokens(getTokensByTheme(props, theme));
-  }, [theme]);
+  // useMemo
+  // React.useEffect(() => {
+  //   // setTokens(getTokensByTheme(props, theme));
+  //   setTokens(filterTokenList(filterString, props, theme));
+  // }, [theme]);
 
   React.useEffect(() => {
-    filterTokenList(filterString, setTokens, props, theme);
+    setTokens(filterTokenList(filterString, props, theme));
     trackTokenFilterString(filterString);
-  }, [filterString]);
+  }, [filterString, props, theme]);
 
   const handleInput = (e: React.FormEvent<HTMLInputElement>): void => {
     const filter = e.currentTarget.value;
