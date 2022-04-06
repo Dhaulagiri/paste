@@ -9,12 +9,15 @@ import {Spinner} from '../src';
 // @ts-ignore typescript doesn't like js imports
 import axe from '../../../../../.jest/axe-helper';
 
-// eslint-disable-next-line react/display-name
-const TestWrapper = (elements?: Record<string, any>): RenderOptions['wrapper'] => ({children}) => (
-  <CustomizationProvider theme={TestTheme} elements={elements} data-testid="test-wrapper">
-    {children}
-  </CustomizationProvider>
-);
+const TestWrapper =
+  (elements?: Record<string, any>): RenderOptions['wrapper'] =>
+  // eslint-disable-next-line react/display-name
+  ({children}) =>
+    (
+      <CustomizationProvider theme={TestTheme} elements={elements} data-testid="test-wrapper">
+        {children}
+      </CustomizationProvider>
+    );
 
 describe('Spinner', () => {
   describe('HTML Attribute', () => {
