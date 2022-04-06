@@ -6,7 +6,7 @@ import {
 } from '../../support/utils/applitools';
 
 // ℹ️ If we use anon functions instead of arrow functions, we can leverage Mocha's context and pull the test name directly from this
-describe('Token list filter', function () {
+describe.only('Token list filter with no existing search params', function () {
   // ℹ️ We are able to reference `this.title` because we have bound this describe block to the Cypress context.
   const testSuiteName = this.title;
 
@@ -54,3 +54,10 @@ describe('Token list filter', function () {
     });
   });
 });
+
+// describe('Token list filter with existing search params', function() {
+
+//   beforeEach(() => {
+//       cy.visit('/tokens/?tokens-filter=inv')
+//     })
+// })
