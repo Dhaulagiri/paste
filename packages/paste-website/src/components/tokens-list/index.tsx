@@ -39,8 +39,6 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
   const [filterString, setFilterString] = React.useState(initialFilterString);
   const [tokens, setTokens] = React.useState<TokenCategory[] | null>(getTokensByTheme(props, theme));
 
-  console.log('PROPS!!!!!!!!!! ---->', props);
-
   // The rendered tokens should update every time the filterString, props, or theme changes
   React.useEffect(() => {
     setTokens(filterTokenList(filterString, props, theme));
