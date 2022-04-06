@@ -1,4 +1,5 @@
 import * as React from 'react';
+import debounce from 'lodash.debounce';
 import {trackCustomEvent} from 'gatsby-plugin-google-analytics';
 import {Box} from '@twilio-paste/box';
 import {Label} from '@twilio-paste/label';
@@ -13,8 +14,6 @@ import {Callout, CalloutTitle, CalloutText} from '../callout';
 import {TokenExample} from './TokensExample';
 import {getTokenValue} from './getTokenValue';
 import {useDarkModeContext} from '../../context/DarkModeContext';
-
-const debounce = require('lodash/debounce');
 
 const sentenceCase = (catName: string): string => {
   return catName
@@ -107,14 +106,12 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
 
   const filterTokenList = (): void => {
     setTokens(() => {
-      const newTokenCategories = getTokensByTheme(props, theme).map(
-        (category): TokenCategory => {
-          const newTokens = category.tokens.filter((token) => {
-            return token.name.includes(filterString) || token.value.includes(filterString);
-          });
-          return {...category, tokens: newTokens};
-        }
-      );
+      const newTokenCategories = getTokensByTheme(props, theme).map((category): TokenCategory => {
+        const newTokens = category.tokens.filter((token) => {
+          return token.name.includes(filterString) || token.value.includes(filterString);
+        });
+        return {...category, tokens: newTokens};
+      });
       const filteredCategories = newTokenCategories.filter((category) => {
         return category.tokens.length > 0;
       });
