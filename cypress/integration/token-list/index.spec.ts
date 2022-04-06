@@ -6,7 +6,7 @@ import {
 } from '../../support/utils/applitools';
 
 // ℹ️ If we use anon functions instead of arrow functions, we can leverage Mocha's context and pull the test name directly from this
-describe.only('Token list filter with no existing search params', function () {
+describe('Token list filter with no existing search params', function () {
   // ℹ️ We are able to reference `this.title` because we have bound this describe block to the Cypress context.
   const testSuiteName = this.title;
 
@@ -18,6 +18,12 @@ describe.only('Token list filter with no existing search params', function () {
     cy.get('input[name="tokens-filter"]').type('background').should('have.value', 'background');
     cy.get('#background-colors').should('exist');
     cy.get('#border-colors').should('not.exist');
+  });
+
+  it('shows empty state', () => {
+    cy.get('input[name="tokens-filter"]').type('abc');
+    cy.get('[data-paste-element="CARD"]').should('exist');
+    cy.get('img[src="/images/patterns/empty-no-results-found.png"]').should('exist');
   });
 
   describe('Visual regression tests', () => {
@@ -55,9 +61,31 @@ describe.only('Token list filter with no existing search params', function () {
   });
 });
 
-// describe('Token list filter with existing search params', function() {
+describe('Token list filter with existing search params', function () {
+  beforeEach(() => {
+    cy.visit('/tokens/?tokens-filter=background');
+  });
 
-//   beforeEach(() => {
-//       cy.visit('/tokens/?tokens-filter=inv')
-//     })
-// })
+  it('filters on page load', () => {
+    cy.get('input[name="tokens-filter"]').should('have.value', 'background');
+    cy.get('#background-colors').should('exist');
+    cy.get('#border-colors').should('not.exist');
+  });
+
+  it('correctly removes params from url', () => {
+    cy.get('input[name="tokens-filter"]')
+      .type(
+        '{moveToEnd}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}'
+      )
+      .should('have.value', '');
+    cy.url().should('not.include', '?tokens-filter');
+  });
+
+  it('filters on backspace', () => {
+    cy.get('input[name="tokens-filter"]')
+      .type('{moveToEnd}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}{backspace}')
+      .should('have.value', 'ba');
+    cy.get('#background-colors').should('exist');
+    cy.get('#sizings').should('exist');
+  });
+});
