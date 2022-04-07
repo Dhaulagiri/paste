@@ -123,7 +123,7 @@ export const TokensList: React.FC<TokensListProps> = (props) => {
           );
         })
       ) : (
-        <Card>
+        <Card data-cy="tokens-empty-state">
           <Stack orientation="horizontal" spacing="space70">
             <Box
               as="img"

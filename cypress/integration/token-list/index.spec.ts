@@ -22,7 +22,7 @@ describe('Token list filter with no existing search params', function () {
 
   it('shows empty state', () => {
     cy.get('input[name="tokens-filter"]').type('abc');
-    cy.get('[data-paste-element="CARD"]').should('exist');
+    cy.get('[data-cy="tokens-empty-state"]').should('exist');
     cy.get('img[src="/images/patterns/empty-no-results-found.png"]').should('exist');
   });
 
