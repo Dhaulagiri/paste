@@ -61,7 +61,7 @@ Paste is a monorepo and has some specific requirements in how it handles depende
 
 Each package can have dev dep requirements, such as typescript. As this is a monorepo using yarn workspaces there is no requirement to list these as package dev deps. All dev deps are hoisted to the monorepo root. Declare them at the root package.json file.
 
-### Peer Deps
+### Peer Depsasdfas
 
 A special note about peer deps: Peer dependencies should be hoisted up the dependency tree. If `package-a` lists `package-b` as a peer dep, and `package-b` lists `package-c` as a peer dep, `package-c` must also be listed as a peer dep for `package-a`. All the way down the tree.
 
